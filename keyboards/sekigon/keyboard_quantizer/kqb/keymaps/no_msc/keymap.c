@@ -17,7 +17,7 @@
 
 #include "pointing_device.h"
 #include "report_parser.h"
-
+#include "raw_hid.h"
 #include "quantizer_mouse.h"
 
 const uint16_t keymaps[][MATRIX_ROWS][MATRIX_COLS] = {{
@@ -71,4 +71,17 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
 void post_process_record_user(uint16_t keycode, keyrecord_t* record) {
     post_process_record_mouse(keycode, record);
+}
+
+__attribute__((weak)) bool via_command_kb(uint8_t *data, uint8_t length) {
+    // data[0] = 0xFF;
+    // data[2] = 0xFF;
+    // data[4] = 0xFF;
+    // data[6] = 0xFF;
+    // data[8] = 0xFF;
+    // data[10] = 0xFF;
+    // raw_hid_send(data, length);
+    // return true;
+    raw_hid_send(data, length);
+    return true;
 }
