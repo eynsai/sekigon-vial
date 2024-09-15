@@ -166,7 +166,16 @@ static void calc_mouse_scaled_move(mouse_parse_result_t const* report, scaled_re
     yv_frac         = yv_real - (scaled->yv << 8);
 }
 
+__attribute((weak)) bool mouse_report_hook_user(mouse_parse_result_t const* report) {
+    return true;
+}
+
 void mouse_report_hook(mouse_parse_result_t const* report) {
+
+    if (!mouse_report_hook_user(report)) {
+        return;
+    }
+
     if (debug_enable) {
         xprintf("Mouse report\n");
         xprintf("b:%d ", report->button);

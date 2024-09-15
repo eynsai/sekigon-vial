@@ -17,8 +17,8 @@
 
 #include "pointing_device.h"
 #include "report_parser.h"
-#include "raw_hid.h"
 #include "quantizer_mouse.h"
+#include "mouse_passthrough_sender.h"
 
 const uint16_t keymaps[][MATRIX_ROWS][MATRIX_COLS] = {{
     {0xe0, 0xe1, 0xe2, 0xe3, 0xe4, 0xe5, 0xe6, 0xe7},
@@ -73,15 +73,14 @@ void post_process_record_user(uint16_t keycode, keyrecord_t* record) {
     post_process_record_mouse(keycode, record);
 }
 
-__attribute__((weak)) bool via_command_kb(uint8_t *data, uint8_t length) {
-    // data[0] = 0xFF;
-    // data[2] = 0xFF;
-    // data[4] = 0xFF;
-    // data[6] = 0xFF;
-    // data[8] = 0xFF;
-    // data[10] = 0xFF;
-    // raw_hid_send(data, length);
-    // return true;
-    raw_hid_send(data, length);
-    return true;
+bool mouse_report_hook_user(mouse_parse_result_t const* report) {
+    return mouse_passthrough_sender_pointing_device_task(report->button, report->x, report->y, report->v, report->h);
+}
+
+bool via_command_kb(uint8_t *data, uint8_t length) {
+    return !mouse_passthrough_sender_raw_hid_receive_task(data);
+}
+
+void matrix_scan_user() {
+    mouse_passthrough_sender_matrix_scan_task();
 }
