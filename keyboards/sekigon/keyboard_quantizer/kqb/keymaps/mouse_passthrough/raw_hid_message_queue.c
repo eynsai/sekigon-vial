@@ -15,9 +15,6 @@ void message_queue_push(const uint8_t* data) {
     if (new_message == NULL) {
         return;
     }
-    if (message_queue_length == 255) {
-        return;
-    }
     message_queue_length++;
     memcpy(new_message->data, data, QMK_RAW_HID_REPORT_SIZE);
     new_message->next = NULL;
