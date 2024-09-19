@@ -54,27 +54,42 @@ const uint16_t keymaps[][MATRIX_ROWS][MATRIX_COLS] = {{
     {0xe8, 0xe9, 0xea, 0xeb, 0xec, 0xed, 0xee, 0xef},
 }};
 
-bool pre_process_record_user(uint16_t keycode, keyrecord_t *record) {
-    return pre_process_record_mouse(keycode, record);
-}
+// bool pre_process_record_user(uint16_t keycode, keyrecord_t *record) {
+//     return pre_process_record_mouse(keycode, record);
+// }
 
-bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    bool cont = process_record_mouse(keycode, record);
+// bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+//     bool cont = process_record_mouse(keycode, record);
 
-    if (record->event.pressed) {
-        switch (keycode) {
-        }
-    }
+//     if (record->event.pressed) {
+//         switch (keycode) {
+//         }
+//     }
 
-    return cont;
-}
+//     return cont;
+// }
 
-void post_process_record_user(uint16_t keycode, keyrecord_t* record) {
-    post_process_record_mouse(keycode, record);
-}
+// void post_process_record_user(uint16_t keycode, keyrecord_t* record) {
+//     post_process_record_mouse(keycode, record);
+// }
+
+extern bool mouse_send_flag;
+static uint8_t last_buttons_sent = 0;
 
 bool mouse_report_hook_user(mouse_parse_result_t const* report) {
-    return mouse_passthrough_sender_pointing_device_task(report->button, report->x, report->y, report->v, report->h);
+    report_mouse_t mouse = pointing_device_get_report();
+    mouse.buttons = report->button;
+    mouse.x = report->x;
+    mouse.y = report->y;
+    mouse.v = report->v;
+    mouse.h = report->h;
+    mouse = mouse_passthrough_sender_pointing_device_task(mouse);
+    if ((last_buttons_sent != mouse.buttons) || (mouse.x != 0) || (mouse.y != 0) || (mouse.v != 0) || (mouse.h != 0)) {
+        mouse_send_flag = true;
+        last_buttons_sent = mouse.buttons;
+    }
+    pointing_device_set_report(mouse);
+    return false;
 }
 
 bool via_command_kb(uint8_t *data, uint8_t length) {
